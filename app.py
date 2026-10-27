@@ -29,6 +29,11 @@ pop.rename(columns={0: "pop", "index": "Gender"}, inplace=True)
 # plot Info
 total_male_literate = df["Male_Literate"].sum()
 total_female_literate = df["Female_Literate"].sum()
+total_rural = df["Rural_Households"].sum()
+total_urban = df["Urban_Households"].sum()
+total_households = total_urban+total_rural
+rural_percentage = total_rural*100/total_households
+urban_percentage = total_urban*100/total_households
 
 st.set_page_config(
     page_title="India Census Dashboard",
@@ -79,12 +84,17 @@ div[data-testid="stPlotlyChart"]{
     border: none;
 
 }
-div[data=testid='stVerticalBlockBorderWrapper']{
+div[data-testid='stVerticalBlockBorderWrapper']{
     border: 1px solid rgb(92, 228, 136);
     border-radius: 12px;
     background-color: black;
     padding: 12px;
     box_shadow: 0 0 8px rgba(37,131,255,0.08);
+}
+
+div[data-testid='stHorizontalBlock']{
+    display: flex;
+    align-items: center;
 }
 </style>
 """,
@@ -308,38 +318,122 @@ with col_2:
         st.plotly_chart(fig, use_container_width=True)
 
 with st.container(border=True):
-    fig = px.pie(
-        pop,
-        values="pop",
-        names="Gender",
-        title="Male and Female Population",
-        color="Gender",
-        color_discrete_map={"Male": "#6BA7F0", "Female": "#ED98FA"},
-        hole=0.6,
-        hover_name="Gender",
-        hover_data='pop'
-    )
-    fig.update_traces(
-        sort=False, marker=dict(line=dict(color="#07172D", width=3))
-    )
-    fig.update_layout(
-        showlegend=False,
-        annotations=[
-            dict(
-                text=(
-                    f"<b>{total_population/1e9:.2f}Billion</b><br><sup>Total Population</sup>"
-                ),
-                x=0.5,
-                y=0.5,
-                xref="paper",
-                yref="paper",
-                showarrow=False,
-                font=dict(size=15, color="#DCEBFF"),
-                align="center",
+    col_pie,col_info = st.columns([1.2,1])
+    with col_pie:
+            fig = px.pie(
+                values=[total_rural, total_urban],
+                names=["Rural", "Urban"],
+                title="Rural and Urban Population",
+                color=["Rural", "Urban"],
+                color_discrete_map={"Rural": "#976BF0", "Urban": "#22FB71"},
+                hole=0.6,
             )
-        ],
-    )
-    st.plotly_chart(fig, use_container_width=True)
+            fig.update_traces(sort=False, marker=dict(line=dict(color="#07172D", width=3)))
+            fig.update_layout(
+                showlegend=False,
+                annotations=[
+                    dict(
+                        text=(
+                            f"<b>{total_population/1e9:.2f}Billion</b><br><sup>Total Population</sup>"
+                        ),
+                        x=0.5,
+                        y=0.5,
+                        xref="paper",
+                        yref="paper",
+                        showarrow=False,
+                        font=dict(size=15, color="#DCEBFF"),
+                        align="center",
+                    )
+                ],
+            )
+            st.plotly_chart(fig, use_container_width=True)
+    with col_info:
+        st.markdown(f"""
+        <div class='main' style='
+                display: flex;
+                align-items: center;
+                width: 100%;
+                flex-direction: column;
+                justify-content: center;
+        '>
+        <div class="info" style='display: flex;
+                            align-items: center;
+                            flex-direction: column;'>
+            <div class="detail"
+                style="
+                    display: flex;
+                    align-items: center;
+                    gap: 20px;
+                    margin: 15px;
+                    margin-bottom:2px;
+                        "
+            >
+                <div class="dot"
+                    style="
+                        height: 20px;
+                        width: 20px;
+                        border: 1px solid;
+                        border-radius: 50%;
+                        background: #22fb71;
+                    "
+                ></div>
+                <div class='type'
+                    style="
+                            color: #4ae381;
+                            font-size: 23px;
+                    "
+                >Rural</div>
+                </div>
+                <div style="display: flex;
+                            margin-left: 80px;
+                            flex-direction: column;
+                            margin-top:-8px;
+                            ">
+                    <span style="font-size: 22px; color: #90f1b4;">{total_rural}</span>
+                    <span style="font-size: 17px; color: #bfffd7;margin-top:-8px;">({rural_percentage:.2f}%)</span>
+                </div>
+            
+        </div>
+        <div class="info" style='display: flex;
+                            align-items: center;
+                            flex-direction: column;'>
+                <div class="detail"
+                    style="
+                        display: flex;
+                        align-items: center;
+                        gap: 20px;
+                        margin: 15px;
+                        margin-bottom:2px;
+                            "
+                >
+                    <div class="dot"
+                        style="
+                            height: 20px;
+                            width: 20px;
+                            border: 1px solid;
+                            border-radius: 50%;
+                            background: rgb(151 107 240);
+                        "
+                    ></div>
+                    <div class='type'
+                        style="
+                                color: #ae8def;
+                                font-size: 23px;
+                        "
+                    >Urban</div>
+                    </div>
+                    <div style="display: flex;
+                                margin-left: 80px;
+                                flex-direction: column;
+                                margin-top:-8px;
+                                ">
+                        <span style="font-size: 22px; color: #c1acec;">{total_urban}</span>
+                        <span style="font-size: 17px; color: #c1acec;margin-top:-8px;">({urban_percentage:.2f}%)</span>
+                    </div>
+            </div>
+                
+    """,unsafe_allow_html=True)
+
 
 col_4, col_5 = st.columns([1.2, 1])
 
@@ -374,8 +468,59 @@ with col_4:
             height=250,
         )
         st.plotly_chart(fig, use_container_width=True)
+        st.divider()
+        st.markdown(
+            f"""
+        <div style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-around;
+                        margin-bottom: 28px;
+                ">
 
-with col_5:
-    st.markdown(f"""
+        <div class='card'
+            style="
+                display: flex;
+                align-items: center;
+                gap: 20px;
+            "
+        >
+        <div>
+        <i class='fa-solid fa-male' style='font-size:50px;color:#20A4F3;'></i>
+        </div>
+        <div style="
+                display: flex;
+                align-items: center;
+                flex-direction: column;
+                justify-content: center;
+        ">
+        <span style='font-size: 30px;color: #54bbf9;'>Male</span>
+        <span style='font-size: 25px;color: #a2d1f8;'>{(total_male_literate*100)/total_population:.2f}%</span>
+        </div>
+        </div>
 
-""")
+        <div class='card'
+            style="
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                "
+        >
+                <div>
+                <i class='fa-solid fa-female' style='font-size:50px;color:#e515e7;'></i>
+                </div>
+                <div style="
+                        display: flex;
+                        align-items: center;
+                        flex-direction: column;
+                        justify-content: center;
+                ">
+                <span style='font-size: 30px;color: #e515e7;'>Female</span>
+                <span style='font-size: 25px;color: #f293f3;'>{(total_female_literate*100)/total_population:.2f}%</span>
+                </div>
+                </div>
+        </div>
+
+""",
+            unsafe_allow_html=True,
+        )
