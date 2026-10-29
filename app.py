@@ -852,7 +852,7 @@ with st.container(border=True):
             st.subheader("Water & Sanitation Analysis")
             st.caption(f"District: {district}, {state}")
 
-            col1, col2 = st.columns(2)
+            col1, col2 = st.columns([1.8,1])
 
             with col1:
                 with st.container(border=True):
