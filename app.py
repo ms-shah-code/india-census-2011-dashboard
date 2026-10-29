@@ -197,6 +197,7 @@ with col_2:
             title="State-wise Population(Top 10)",
         )
         fig.update_layout(
+            showlegend=False,
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
         )
@@ -443,7 +444,17 @@ with st.container(border=True):
     )
     fig.update_traces(marker=dict(line=dict(color="#07172D", width=2)))
     fig.update_layout(
-        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", height=700
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        height=700,
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.50,
+            xanchor="center",
+            x=0.5,
+            font=dict(size=10),
+        ),
     )
     fig.update_xaxes(tickangle=-90)
     st.plotly_chart(fig, use_container_width=True)
@@ -461,6 +472,73 @@ with st.container(border=True):
             .index.sort_values()
             .to_list(),
         )
+
+        # cards
+        selected_df = df[(df["State"] == state) & (df["District"] == district)]
+
+        total_population = selected_df["Population"].sum()
+        total_male_population = selected_df["Male"].sum()
+        total_female_population = selected_df["Female"].sum()
+        total_households = selected_df["Households"].sum()
+        total_workers = selected_df["Workers"].sum()
+
+        def format_number(value):
+            return f"{value:,.0f}"
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            with st.container(border=True):
+                st.markdown("#### Population Overview")
+                st.metric(
+                    label="Total Population",
+                    value=format_number(total_population),
+                    icon=":material/groups:",
+                    border=True,
+                )
+
+        with col2:
+            with st.container(border=True):
+                st.markdown("#### Male Demographics")
+                st.metric(
+                    label="Male Population",
+                    value=format_number(total_male_population),
+                    icon=":material/man:",
+                    border=True,
+                )
+
+        with col3:
+            with st.container(border=True):
+                st.markdown("#### Female Demographics")
+                st.metric(
+                    label="Female Population",
+                    value=format_number(total_female_population),
+                    icon=":material/woman:",
+                    border=True,
+                )
+
+        col4, col5 = st.columns(2)
+
+        with col4:
+            with st.container(border=True):
+                st.markdown("#### Household Overview")
+                st.metric(
+                    label="Total Households",
+                    value=format_number(total_households),
+                    icon=":material/house:",
+                    border=True,
+                )
+
+        with col5:
+            with st.container(border=True):
+                st.markdown("#### Workforce Overview")
+                st.metric(
+                    label="Total Workers",
+                    value=format_number(total_workers),
+                    icon=":material/work:",
+                    border=True,
+                )
+
         col_bar, col_pie = st.columns(2)
         with col_bar:
             with st.container(border=True):
@@ -516,8 +594,6 @@ with st.container(border=True):
                     plot_bgcolor="rgba(0,0,0,0)",
                 )
                 st.plotly_chart(fig, use_container_width=True)
-        # col_workers = st.columns(1)
-        # with col_workers:
         with st.container(border=True):
             temp = df[(df["State"] == state) & (df["District"] == district)][
                 [
@@ -559,5 +635,318 @@ with st.container(border=True):
             fig.update_layout(
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
+                showlegend=True,
             )
             st.plotly_chart(fig, use_container_width=True)
+        with st.container(border=True):
+            age_cols = [
+                "Age_Group_0_29",
+                "Age_Group_30_49",
+                "Age_Group_50",
+                "Age not stated",
+            ]
+
+            age_df = df.groupby("State")[age_cols].sum().reset_index()
+
+            fig = px.bar(
+                age_df,
+                x="State",
+                y=age_cols,
+                title="State-wise Age Group Distribution",
+                labels={
+                    "value": "Population",
+                    "variable": "Age Group",
+                    "State": "State",
+                },
+                barmode="stack",
+                color_discrete_sequence=["#38BDF8", "#818CF8", "#F472B6", "#94A3B8"],
+            )
+
+            fig.update_layout(
+                template="plotly_white",
+                xaxis_tickangle=-45,
+                legend_title_text="Age Group",
+                margin=dict(l=20, r=20, t=60, b=100),
+            )
+
+            st.plotly_chart(fig, use_container_width=True)
+        col_religion, col_cast = st.columns([1, 1.8])
+        with col_religion:
+            with st.container(border=True):
+                religion_cols = [
+                    "Hindus",
+                    "Muslims",
+                    "Sikhs",
+                    "Christians",
+                    "Buddhists",
+                    "Jains",
+                    "Others",
+                ]
+
+                religion_cols = [
+                    col for col in religion_cols if col in selected_df.columns
+                ]
+
+                religion_data = selected_df[religion_cols].sum().reset_index()
+
+                religion_data.columns = ["Religion", "Population"]
+
+                religion_data = religion_data[religion_data["Population"] > 0]
+
+                total_religion_population = religion_data["Population"].sum()
+
+                fig = px.pie(
+                    religion_data,
+                    names="Religion",
+                    values="Population",
+                    hole=0.68,
+                    color_discrete_sequence=[
+                        "#38BDF8",
+                        "#818CF8",
+                        "#F472B6",
+                        "#34D399",
+                        "#FBBF24",
+                        "#FB7185",
+                        "#A78BFA",
+                    ],
+                )
+
+                fig.update_traces(
+                    textinfo="percent",
+                    textposition="outside",
+                    textfont=dict(size=11),
+                    hovertemplate=(
+                        "<b>%{label}</b><br>"
+                        "Population: %{value:,.0f}<br>"
+                        "Share: %{percent}"
+                        "<extra></extra>"
+                    ),
+                    marker=dict(line=dict(color="rgba(128,128,128,0.2)", width=2)),
+                )
+
+                fig.update_layout(
+                    title=dict(
+                        text=f"Religion Distribution — {district}",
+                        x=0.5,
+                        xanchor="center",
+                    ),
+                    height=450,
+                    showlegend=True,
+                    legend=dict(
+                        orientation="h",
+                        yanchor="bottom",
+                        y=-0.20,
+                        xanchor="center",
+                        x=0.5,
+                        font=dict(size=10),
+                    ),
+                    margin=dict(l=25, r=25, t=70, b=75),
+                    annotations=[
+                        dict(
+                            text=(
+                                f"<b>{total_religion_population:,.0f}</b>" "<br>Total"
+                            ),
+                            x=0.5,
+                            y=0.5,
+                            showarrow=False,
+                            font=dict(size=16),
+                        )
+                    ],
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)",
+                )
+
+                st.plotly_chart(fig, use_container_width=True)
+
+        with col_cast:
+            # SC vs ST Population Analysis
+            with st.container(border=True):
+                st.subheader("SC vs ST Population Analysis")
+                st.caption(f"District: {district}, {state}")
+
+                sc_st_cols = ["SC", "ST"]
+                missing_cols = [col for col in sc_st_cols if col not in selected_df.columns]
+
+                if missing_cols:
+                    st.warning(f"Missing columns: {', '.join(missing_cols)}")
+                else:
+                    population_data = pd.DataFrame({
+                        "Category": ["SC", "ST"],
+                        "Population": [
+                            selected_df["SC"].sum(),
+                            selected_df["ST"].sum()
+                        ]
+                    })
+
+                    fig = px.bar(
+                        population_data,
+                        x="Category",
+                        y="Population",
+                        color="Category",
+                        text="Population",
+                        title="Scheduled Caste vs Scheduled Tribe Population",
+                        color_discrete_map={
+                            "SC": "#38BDF8",
+                            "ST": "#F472B6"
+                        }
+                    )
+
+                    fig.update_traces(
+                        texttemplate="%{text:,.0f}",
+                        textposition="outside",
+                        hovertemplate=(
+                            "<b>%{x}</b><br>"
+                            "Population: %{y:,.0f}"
+                            "<extra></extra>"
+                        )
+                    )
+
+                    fig.update_layout(
+                        height=350,
+                        showlegend=False,
+                        xaxis_title="Category",
+                        yaxis_title="Population",
+                        paper_bgcolor="rgba(0,0,0,0)",
+                        plot_bgcolor="rgba(0,0,0,0)",
+                        margin=dict(l=20, r=20, t=65, b=30)
+                    )
+
+                    st.plotly_chart(fig, use_container_width=True)
+
+        with st.container(border=True):
+            st.subheader("Water & Sanitation Analysis")
+            st.caption(f"District: {district}, {state}")
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                with st.container(border=True):
+                    water_cols = [
+                        "Main_source_of_drinking_water_Tapwater_Households",
+                        "Main_source_of_drinking_water_Tubewell_Borehole_Households",
+                        "Main_source_of_drinking_water_Handpump_Tubewell_Borewell_Households",
+                        "Main_source_of_drinking_water_Un_covered_well_Households",
+                        "Main_source_of_drinking_water_Tank_Pond_Lake_Households",
+                        "Main_source_of_drinking_water_River_Canal_Households",
+                        "Main_source_of_drinking_water_Spring_Households",
+                        "Main_source_of_drinking_water_Other_sources_Households"
+                    ]
+
+                    water_cols = [
+                        c for c in water_cols
+                        if c in selected_df.columns
+                    ]
+
+                    water_data = selected_df[water_cols].sum()
+
+                    water_data = water_data[water_data > 0]
+
+                    water_data.index = [
+                        c.replace("Main_source_of_drinking_water_", "")
+                        .replace("_Households", "")
+                        .replace("_", " ")
+                        for c in water_data.index
+                    ]
+
+                    water_data = water_data.reset_index()
+                    water_data.columns = ["Water Source", "Households"]
+
+                    if not water_data.empty:
+                        fig = px.bar(
+                            water_data,
+                            x="Households",
+                            y="Water Source",
+                            orientation="h",
+                            title="Households by Drinking Water Source",
+                            text="Households",
+                            color="Households",
+                            color_continuous_scale="Blues"
+                        )
+
+                        fig.update_traces(
+                            texttemplate="%{text:,.0f}",
+                            textposition="outside",
+                            hovertemplate=(
+                                "<b>%{y}</b><br>"
+                                "Households: %{x:,.0f}"
+                                "<extra></extra>"
+                            )
+                        )
+
+                        fig.update_layout(
+                            height=480,
+                            showlegend=False,
+                            coloraxis_showscale=False,
+                            margin=dict(l=10, r=30, t=65, b=25),
+                            paper_bgcolor="rgba(0,0,0,0)",
+                            plot_bgcolor="rgba(0,0,0,0)"
+                        )
+
+                        st.plotly_chart(fig, use_container_width=True)
+                    else:
+                        st.info("Drinking water source columns not available.")
+
+            with col2:
+                with st.container(border=True):
+                    sanitation_cols = [
+                        "Having_latrine_facility_within_the_premises_Total_Households",
+                        "Not_having_latrine_facility_within_the_premises_Alternative_source_Open_Households"
+                    ]
+
+                    sanitation_cols = [
+                        c for c in sanitation_cols
+                        if c in selected_df.columns
+                    ]
+
+                    sanitation_data = selected_df[sanitation_cols].sum()
+
+                    sanitation_data = sanitation_data[sanitation_data > 0]
+
+                    sanitation_labels = {
+                        "Having_latrine_facility_within_the_premises_Total_Households":
+                            "Latrine within premises",
+                        "Not_having_latrine_facility_within_the_premises_Alternative_source_Open_Households":
+                            "No latrine / open alternative"
+                    }
+
+                    sanitation_data.index = [
+                        sanitation_labels.get(c, c.replace("_", " "))
+                        for c in sanitation_data.index
+                    ]
+
+                    sanitation_data = sanitation_data.reset_index()
+                    sanitation_data.columns = ["Sanitation Facility", "Households"]
+
+                    if not sanitation_data.empty:
+                        fig = px.pie(
+                            sanitation_data,
+                            names="Sanitation Facility",
+                            values="Households",
+                            hole=0.62,
+                            title="Household Sanitation Facilities",
+                            color_discrete_sequence=[
+                                "#34D399",
+                                "#FB7185"
+                            ]
+                        )
+
+                        fig.update_traces(
+                            textinfo="percent",
+                            hovertemplate=(
+                                "<b>%{label}</b><br>"
+                                "Households: %{value:,.0f}<br>"
+                                "Share: %{percent}"
+                                "<extra></extra>"
+                            )
+                        )
+
+                        fig.update_layout(
+                            height=480,
+                            margin=dict(l=15, r=15, t=65, b=25),
+                            paper_bgcolor="rgba(0,0,0,0)",
+                            plot_bgcolor="rgba(0,0,0,0)"
+                        )
+
+                        st.plotly_chart(fig, use_container_width=True)
+                    else:
+                        st.info("Sanitation columns not available.")
