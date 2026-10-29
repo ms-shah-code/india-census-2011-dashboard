@@ -560,6 +560,16 @@ with st.container(border=True):
                     text="Population",
                 )
                 fig.update_layout(
+                    showlegend=False,
+                    legend=dict(
+                        orientation="h",
+                        yanchor="bottom",
+                        y=-0.20,
+                        xanchor="center",
+                        x=0.5,
+                        font=dict(size=10),
+                    ),
+                    margin=dict(l=25, r=25, t=70, b=75),
                     paper_bgcolor="rgba(0,0,0,0)",
                     plot_bgcolor="rgba(0,0,0,0)",
                 )
@@ -590,6 +600,16 @@ with st.container(border=True):
                     sort=False, marker=dict(line=dict(color="#07172D", width=3))
                 )
                 fig.update_layout(
+                    showlegend=True,
+                    legend=dict(
+                        orientation="h",
+                        yanchor="bottom",
+                        y=-0.20,
+                        xanchor="center",
+                        x=0.5,
+                        font=dict(size=10),
+                    ),
+                    margin=dict(l=25, r=25, t=70, b=75),
                     paper_bgcolor="rgba(0,0,0,0)",
                     plot_bgcolor="rgba(0,0,0,0)",
                 )
@@ -636,6 +656,14 @@ with st.container(border=True):
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
                 showlegend=True,
+                legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=-0.99,
+                    xanchor="center",
+                    x=0.5,
+                    font=dict(size=10),
+                ),
             )
             st.plotly_chart(fig, use_container_width=True)
         with st.container(border=True):
@@ -667,6 +695,15 @@ with st.container(border=True):
                 xaxis_tickangle=-45,
                 legend_title_text="Age Group",
                 margin=dict(l=20, r=20, t=60, b=100),
+                showlegend=True,
+                legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=-0.99,
+                    xanchor="center",
+                    x=0.5,
+                    font=dict(size=10),
+                ),
             )
 
             st.plotly_chart(fig, use_container_width=True)
@@ -759,24 +796,27 @@ with st.container(border=True):
                 st.plotly_chart(fig, use_container_width=True)
 
         with col_cast:
-            # SC vs ST Population Analysis
             with st.container(border=True):
                 st.subheader("SC vs ST Population Analysis")
                 st.caption(f"District: {district}, {state}")
 
                 sc_st_cols = ["SC", "ST"]
-                missing_cols = [col for col in sc_st_cols if col not in selected_df.columns]
+                missing_cols = [
+                    col for col in sc_st_cols if col not in selected_df.columns
+                ]
 
                 if missing_cols:
                     st.warning(f"Missing columns: {', '.join(missing_cols)}")
                 else:
-                    population_data = pd.DataFrame({
-                        "Category": ["SC", "ST"],
-                        "Population": [
-                            selected_df["SC"].sum(),
-                            selected_df["ST"].sum()
-                        ]
-                    })
+                    population_data = pd.DataFrame(
+                        {
+                            "Category": ["SC", "ST"],
+                            "Population": [
+                                selected_df["SC"].sum(),
+                                selected_df["ST"].sum(),
+                            ],
+                        }
+                    )
 
                     fig = px.bar(
                         population_data,
@@ -785,20 +825,15 @@ with st.container(border=True):
                         color="Category",
                         text="Population",
                         title="Scheduled Caste vs Scheduled Tribe Population",
-                        color_discrete_map={
-                            "SC": "#38BDF8",
-                            "ST": "#F472B6"
-                        }
+                        color_discrete_map={"SC": "#38BDF8", "ST": "#F472B6"},
                     )
 
                     fig.update_traces(
                         texttemplate="%{text:,.0f}",
                         textposition="outside",
                         hovertemplate=(
-                            "<b>%{x}</b><br>"
-                            "Population: %{y:,.0f}"
-                            "<extra></extra>"
-                        )
+                            "<b>%{x}</b><br>" "Population: %{y:,.0f}" "<extra></extra>"
+                        ),
                     )
 
                     fig.update_layout(
@@ -808,7 +843,7 @@ with st.container(border=True):
                         yaxis_title="Population",
                         paper_bgcolor="rgba(0,0,0,0)",
                         plot_bgcolor="rgba(0,0,0,0)",
-                        margin=dict(l=20, r=20, t=65, b=30)
+                        margin=dict(l=20, r=20, t=65, b=30),
                     )
 
                     st.plotly_chart(fig, use_container_width=True)
@@ -829,13 +864,10 @@ with st.container(border=True):
                         "Main_source_of_drinking_water_Tank_Pond_Lake_Households",
                         "Main_source_of_drinking_water_River_Canal_Households",
                         "Main_source_of_drinking_water_Spring_Households",
-                        "Main_source_of_drinking_water_Other_sources_Households"
+                        "Main_source_of_drinking_water_Other_sources_Households",
                     ]
 
-                    water_cols = [
-                        c for c in water_cols
-                        if c in selected_df.columns
-                    ]
+                    water_cols = [c for c in water_cols if c in selected_df.columns]
 
                     water_data = selected_df[water_cols].sum()
 
@@ -860,7 +892,7 @@ with st.container(border=True):
                             title="Households by Drinking Water Source",
                             text="Households",
                             color="Households",
-                            color_continuous_scale="Blues"
+                            color_continuous_scale="Blues",
                         )
 
                         fig.update_traces(
@@ -870,7 +902,7 @@ with st.container(border=True):
                                 "<b>%{y}</b><br>"
                                 "Households: %{x:,.0f}"
                                 "<extra></extra>"
-                            )
+                            ),
                         )
 
                         fig.update_layout(
@@ -879,7 +911,7 @@ with st.container(border=True):
                             coloraxis_showscale=False,
                             margin=dict(l=10, r=30, t=65, b=25),
                             paper_bgcolor="rgba(0,0,0,0)",
-                            plot_bgcolor="rgba(0,0,0,0)"
+                            plot_bgcolor="rgba(0,0,0,0)",
                         )
 
                         st.plotly_chart(fig, use_container_width=True)
@@ -890,12 +922,11 @@ with st.container(border=True):
                 with st.container(border=True):
                     sanitation_cols = [
                         "Having_latrine_facility_within_the_premises_Total_Households",
-                        "Not_having_latrine_facility_within_the_premises_Alternative_source_Open_Households"
+                        "Not_having_latrine_facility_within_the_premises_Alternative_source_Open_Households",
                     ]
 
                     sanitation_cols = [
-                        c for c in sanitation_cols
-                        if c in selected_df.columns
+                        c for c in sanitation_cols if c in selected_df.columns
                     ]
 
                     sanitation_data = selected_df[sanitation_cols].sum()
@@ -903,10 +934,8 @@ with st.container(border=True):
                     sanitation_data = sanitation_data[sanitation_data > 0]
 
                     sanitation_labels = {
-                        "Having_latrine_facility_within_the_premises_Total_Households":
-                            "Latrine within premises",
-                        "Not_having_latrine_facility_within_the_premises_Alternative_source_Open_Households":
-                            "No latrine / open alternative"
+                        "Having_latrine_facility_within_the_premises_Total_Households": "Latrine within premises",
+                        "Not_having_latrine_facility_within_the_premises_Alternative_source_Open_Households": "No latrine / open alternative",
                     }
 
                     sanitation_data.index = [
@@ -924,10 +953,7 @@ with st.container(border=True):
                             values="Households",
                             hole=0.62,
                             title="Household Sanitation Facilities",
-                            color_discrete_sequence=[
-                                "#34D399",
-                                "#FB7185"
-                            ]
+                            color_discrete_sequence=["#34D399", "#FB7185"],
                         )
 
                         fig.update_traces(
@@ -937,14 +963,24 @@ with st.container(border=True):
                                 "Households: %{value:,.0f}<br>"
                                 "Share: %{percent}"
                                 "<extra></extra>"
-                            )
+                            ),
+                            
                         )
 
                         fig.update_layout(
                             height=480,
-                            margin=dict(l=15, r=15, t=65, b=25),
+                            showlegend=True,
+                            legend=dict(
+                                orientation="h",
+                                yanchor="bottom",
+                                y=-0.20,
+                                xanchor="center",
+                                x=0.5,
+                                font=dict(size=10),
+                            ),
+                            margin=dict(l=25, r=25, t=70, b=75),
                             paper_bgcolor="rgba(0,0,0,0)",
-                            plot_bgcolor="rgba(0,0,0,0)"
+                            plot_bgcolor="rgba(0,0,0,0)",
                         )
 
                         st.plotly_chart(fig, use_container_width=True)
